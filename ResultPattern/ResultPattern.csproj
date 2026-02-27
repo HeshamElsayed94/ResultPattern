@@ -15,6 +15,9 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
         <PackageReleaseNotes>Result.Ensure&lt;T&gt; and Result.Combine — aggregate and validate with full error collection, no short-circuiting.</PackageReleaseNotes>
+        <PackageProjectUrl>https://github.com/HeshamElsayed94/ResultPattern</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/HeshamElsayed94/ResultPattern/tree/master/ResultPattern</RepositoryUrl>
+        <RepositoryType>Public</RepositoryType>
     </PropertyGroup>
 
     <ItemGroup>
