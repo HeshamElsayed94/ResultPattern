@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <PackageId>Hesham.ResultPattern</PackageId>
+        <Title>ResultPttern</Title>
+        <Authors>Hesham Elsayed</Authors>
+        <Description>This Package include ResultPattern with stackTrace that gives you indecation where the error happen (MemberName , FileName , LineNumber)</Description>
+        <PackageTags>ResultPattern</PackageTags>
+        <LangVersion>14</LangVersion>
+        <Version>1.1.1</Version>
+        <TargetFrameworks>net10.0;net8.0;net9.0</TargetFrameworks>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <PackageReadmeFile>Readme.md</PackageReadmeFile>
+        <PackageReleaseNotes>Result.Ensure&lt;T&gt; and Result.Combine — aggregate and validate with full error collection, no short-circuiting.</PackageReleaseNotes>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <None Remove="Readme.md" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="Readme.md">
+        <Pack>True</Pack>
+        <PackagePath>\</PackagePath>
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+    </ItemGroup>
+
+</Project>
