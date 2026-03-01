@@ -4,14 +4,31 @@ using System.Text.Json.Serialization;
 
 namespace ResultPattern.Results.Errors;
 
+/// <summary>
+/// Represents a structured error in the Result pattern with a code, description,
+/// HTTP status code, and caller stack trace.
+/// </summary>
+/// <remarks>
+/// Use the static factory methods to create instances. The compiler automatically
+/// captures caller info .
+/// <see cref="StackTrace"/> is excluded from JSON serialization to prevent
+/// source path leakage in API responses.
+/// </remarks>
 public record Error
 {
+	/// <summary>Machine-readable error category (e.g., <c>"NotFound"</c>, <c>"Conflict"</c>).</summary>
 	public string Code { get; }
 
+	/// <summary>Human-readable message describing the error. Safe to expose in API responses.</summary>
 	public string Description { get; }
 
+	/// <summary>HTTP status code corresponding to this error type.</summary>
 	public HttpStatusCode StatusCode { get; }
 
+	/// <summary>
+	/// Call-site trace info (file, line, member). Excluded from JSON serialization.
+	/// Use for internal logging only.
+	/// </summary>
 	[JsonIgnore]
 	public ResultStackTrace StackTrace { get; }
 
@@ -27,7 +44,6 @@ public record Error
 			: Path.GetFileName(stackTrace.FileName);
 
 		StackTrace = stackTrace with { FileName = fileName };
-
 	}
 
 	/// <summary>

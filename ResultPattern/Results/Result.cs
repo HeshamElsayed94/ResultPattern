@@ -5,8 +5,12 @@ using ResultPattern.Results.Interfaces;
 
 namespace ResultPattern.Results;
 
+/// <summary>
+/// Provides static factory utilities for creating and combining <see cref="Result{T}"/> instances.
+/// </summary>
 public static class Result
 {
+	/// <summary>Represents a successful operation with no return value. Use as a return value for void-like results.</summary>
 	public static Success Success => default;
 
 	/// <summary>
@@ -38,7 +42,7 @@ public static class Result
 	{
 		ArgumentNullException.ThrowIfNull(results);
 
-		var failedResults = results.Where(r => !r.ISuccess).ToArray();
+		var failedResults = results.Where(r => !r.IsSuccess).ToArray();
 
 		if (failedResults.Length is 0)
 			return Result.Success;
@@ -61,7 +65,7 @@ public static class Result
 	/// Each validation rule consists of a predicate and an associated <see cref="Error"/>.
 	/// </para>
 	/// <para>
-	/// A predicate returning <c>true</c> indicates a validation failure,
+	/// A predicate returning <c>false</c> indicates a validation failure,
 	/// and its corresponding error will be collected.
 	/// </para>
 	/// <para>
@@ -86,7 +90,7 @@ public static class Result
 	/// <exception cref="ArgumentNullException">
 	/// Thrown when any supplied predicate is <c>null</c>.
 	/// </exception>
-	public static Result<T> Ensure<T>(T value, params ( Predicate<T> predicate, Error error)[] functions)
+	public static Result<T> Ensure<T>(T value, params (Predicate<T> predicate, Error error)[] functions)
 	{
 		var results = new List<Result<T>>();
 
@@ -94,30 +98,39 @@ public static class Result
 		{
 			if (predicate is null) throw new ArgumentNullException(nameof(predicate));
 
-			if (predicate(value))
+			if (!predicate(value))
 				results.Add(error);
 		}
 
 		var combinedResult = Result.Combine(results);
 
-		if (combinedResult.ISuccess)
+		if (combinedResult.IsSuccess)
 			return value;
 
 		return combinedResult.Errors!.ToList();
 	}
+
 }
 
+/// <summary>
+/// Represents the outcome of an operation that either holds a <typeparamref name="TValue"/> on success
+/// or a list of <see cref="Error"/> instances on failure.
+/// </summary>
+/// <typeparam name="TValue">The type of the value returned on success.</typeparam>
 public sealed class Result<TValue> : IResult<TValue>
 {
 	private readonly TValue? _value;
 
 	private readonly List<Error>? _errors;
 
+	/// <summary>The success value. Only access this when <see cref="IsSuccess"/> is <c>true</c>.</summary>
 	public TValue Value => _value!;
 
+	/// <summary>The list of errors when the result is failed; <c>null</c> when successful.</summary>
 	public IReadOnlyList<Error>? Errors => _errors;
 
-	public bool ISuccess => Errors is null;
+	/// <summary><c>true</c> if the result is successful; <c>false</c> if it contains errors.</summary>
+	public bool IsSuccess => Errors is null;
 
 	[JsonConstructor]
 	private Result(TValue? value, List<Error>? errors)
@@ -156,14 +169,25 @@ public sealed class Result<TValue> : IResult<TValue>
 		_errors = errors;
 	}
 
+	/// <summary>Implicitly creates a successful result from a value.</summary>
 	public static implicit operator Result<TValue>(TValue value) => new(value);
 
+	/// <summary>Implicitly creates a failed result from a single error.</summary>
 	public static implicit operator Result<TValue>(Error error) => new(error);
 
+	/// <summary>Implicitly creates a failed result from a list of errors.</summary>
 	public static implicit operator Result<TValue>(List<Error> errors) => new(errors);
 
+	/// <summary>
+	/// Executes one of two functions depending on whether the result is successful or failed.
+	/// </summary>
+	/// <typeparam name="TNextValue">The return type of both branches.</typeparam>
+	/// <param name="onValue">Invoked with the success value when <see cref="IsSuccess"/> is <c>true</c>.</param>
+	/// <param name="onError">Invoked with the error list when <see cref="IsSuccess"/> is <c>false</c>.</param>
+	/// <returns>The value returned by whichever branch was executed.</returns>
 	public TNextValue Match<TNextValue>(Func<TValue, TNextValue> onValue, Func<List<Error>, TNextValue> onError)
-		=> !ISuccess ? onError(_errors!) : onValue(Value);
+		=> !IsSuccess ? onError(_errors!) : onValue(Value);
 }
 
+/// <summary>Represents the value of a successful operation with no return value. Used as <see cref="Result{TValue}"/> with <c>TValue = Success</c> for void-like results.</summary>
 public readonly record struct Success;

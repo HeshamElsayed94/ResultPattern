@@ -10,11 +10,37 @@
         <Description>This Package include ResultPattern with stackTrace that gives you indecation where the error happen (MemberName , FileName , LineNumber)</Description>
         <PackageTags>ResultPattern</PackageTags>
         <LangVersion>14</LangVersion>
-        <Version>1.1.1</Version>
+        <Version>1.1.2</Version>
         <TargetFrameworks>net10.0;net8.0;net9.0</TargetFrameworks>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
-        <PackageReleaseNotes>Result.Ensure&lt;T&gt; and Result.Combine — aggregate and validate with full error collection, no short-circuiting.</PackageReleaseNotes>
+        <PackageReleaseNotes>## 🚨 **CRITICAL UPDATE - ResultPattern v1.1.2+**
+
+**⚠️ BREAKING CHANGE - All `Result.Ensure&lt;T&gt;` users must update code**
+
+### **`Result.Ensure&lt;T&gt;` Predicate Logic Reverted to Intuitive Behavior**
+
+| Version | Predicate returns `true` | Error Collected When |
+|---------|--------------------------|----------------------|
+| **v1.1.1** *(Old)* | ❌ Invalid | `predicate(value)` *(wrong)* |
+| **v1.1.2+** *(New)* | ✅ Valid | `!predicate(value)` *(correct)* |
+
+### 🔄 **Migration Guide**
+
+#### ❌ **Before (v1.1.1)**
+```csharp
+Result.Ensure(name,
+    (n =&gt; string.IsNullOrEmpty(n), Error.Validation("Name required"))
+```
+#### ✅ **After(v1.1.2)**
+
+```csharp
+
+Result.Ensure(name,
+
+    (n =&gt; !string.IsNullOrEmpty(n), Error.Validation("Name required"))
+
+```</PackageReleaseNotes>
         <PackageProjectUrl>https://github.com/HeshamElsayed94/ResultPattern</PackageProjectUrl>
         <RepositoryUrl>https://github.com/HeshamElsayed94/ResultPattern/tree/master/ResultPattern</RepositoryUrl>
         <RepositoryType>Public</RepositoryType>

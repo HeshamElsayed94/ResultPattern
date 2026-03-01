@@ -38,9 +38,9 @@ A sealed generic type that holds **either** a value on success, or a list of `Er
 
 | Member | Type | Description |
 |---|---|---|
-| `Value` | `TValue` | The success value. Only safe to access when `ISuccess` is `true`. |
+| `Value` | `TValue` | The success value. Only safe to access when `IsSuccess` is `true`. |
 | `Errors` | `IReadOnlyList<Error>?` | The list of errors. `null` when the result is successful. |
-| `ISuccess` | `bool` | `true` when no errors are present. |
+| `IsSuccess` | `bool` | `true` when no errors are present. |
 
 **Implicit conversions** allow natural return syntax inside handlers:
 
@@ -122,9 +122,8 @@ return Result.Success;
 Validates a **single value** against one or more rules in one call.  
 Each rule is a `(Predicate<T> predicate, Error error)` tuple.
 
-> ⚠️ A predicate returning **`true` signals a failure** — think of it as "is this condition a problem?".
-
-**All predicates are always evaluated.** All failures are collected and returned together.
+> ✅ **Predicate returns `true` = PASS (valid), `false` = FAIL (error collected).**  
+> **All predicates are always evaluated.** All failures are collected and returned together.
 
 #### Signature
 
@@ -138,8 +137,8 @@ The simplest use case is validating a single field. Notice how method group synt
 
 ```csharp
 var nameValidation = Result.Ensure(name,
-    (string.IsNullOrEmpty,      Error.Validation("Name cannot be null or empty.")),
-    (e => e?.Length < 3,        Error.Validation("Name cannot be less than 3 characters."))
+    (n => !string.IsNullOrEmpty(n),     Error.Validation("Name cannot be null or empty.")),
+    (n => n?.Length >= 3,               Error.Validation("Name must be 3+ characters."))
 );
 ```
 
@@ -150,16 +149,16 @@ var nameValidation = Result.Ensure(name,
 ```csharp
 var ensureResult = Result.Ensure(restaurant,
     (
-        r => !restaurantAuthorization.Authorize(r, ResourceOperation.Delete),
+        r => restaurantAuthorization.Authorize(r, ResourceOperation.Delete),
         Error.Forbidden($"You are not the owner of restaurant '{request.Id}'.")
     ),
     (
-        r => r.HasActiveOrders,
+        r => !r.HasActiveOrders,
         Error.Conflict($"Restaurant '{request.Id}' has active orders and cannot be deleted.")
     )
 );
 
-if (!ensureResult.ISuccess)
+if (!ensureResult.IsSuccess)
     return ensureResult.Errors!.ToList();
 ```
 
@@ -189,19 +188,19 @@ The real power of `Combine` emerges in factory methods, where you validate each 
 public static Result<User> Create(string name, string email)
 {
     var nameValidation = Result.Ensure(name,
-        (string.IsNullOrEmpty,   Error.Validation("Name cannot be null or empty.")),
-        (e => e?.Length < 3,     Error.Validation("Name cannot be less than 3 characters."))
+        (n => !string.IsNullOrEmpty(n),     Error.Validation("Name cannot be null or empty.")),
+        (n => n?.Length >= 3,               Error.Validation("Name must be 3+ characters."))
     );
 
     var emailValidation = Result.Ensure(email,
-        (string.IsNullOrEmpty,           Error.Validation("Email cannot be null or empty.")),
-        (e => e?.Length < 3,             Error.Validation("Email cannot be less than 3 characters.")),
-        (e => e?.Split('@').Length != 2, Error.Validation("Invalid email address."))
+        (e => !string.IsNullOrEmpty(e),     Error.Validation("Email cannot be null or empty.")),
+        (e => e?.Length >= 3,               Error.Validation("Email must be 3+ characters.")),
+        (e => e?.Contains("@"),             Error.Validation("Invalid email address."))
     );
 
     var combinedResult = Result.Combine([nameValidation, emailValidation]);
 
-    if (!combinedResult.ISuccess)
+    if (!combinedResult.IsSuccess)
         return combinedResult.Errors!.ToList();
 
     return new User(name, email);
@@ -209,21 +208,6 @@ public static Result<User> Create(string name, string email)
 ```
 
 If a caller passes both an invalid name and an invalid email, **all violations are returned in a single response** — the caller never needs to fix one issue just to discover the next.
-
-#### Example — Combining Independent Operation Results
-
-```csharp
-var ownershipResult = restaurantAuthorization.Authorize(restaurant, ResourceOperation.Delete)
-    ? Result.Success
-    : (Result<Success>)Error.Forbidden($"You are not the owner of restaurant '{request.Id}'.");
-
-var billingResult = await billingService.CanDeleteAsync(restaurant.Id, ct);
-
-var combined = Result.Combine([ownershipResult, billingResult]);
-
-if (!combined.ISuccess)
-    return combined.Errors!.ToList();
-```
 
 ---
 
@@ -263,16 +247,16 @@ public async ValueTask<Result<Success>> Handle(DeleteRestaurantCommand request, 
 
     var ensureResult = Result.Ensure(restaurant,
         (
-            r => !restaurantAuthorization.Authorize(r, ResourceOperation.Delete),
+            r => restaurantAuthorization.Authorize(r, ResourceOperation.Delete),
             Error.Forbidden($"You are not the owner of restaurant '{request.Id}'.")
         ),
         (
-            r => r.HasActiveOrders,
+            r => !r.HasActiveOrders,
             Error.Conflict($"Restaurant '{request.Id}' has active orders and cannot be deleted.")
         )
     );
 
-    if (!ensureResult.ISuccess)
+    if (!ensureResult.IsSuccess)
         return ensureResult.Errors!.ToList();
 
     dbContext.Restaurants.Remove(restaurant);

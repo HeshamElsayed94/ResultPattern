@@ -6,7 +6,7 @@
         <AssemblyName>ResultPattern.Extension.MVC</AssemblyName>
         <RootNamespace>ResultPattern.Extension.MVC</RootNamespace>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Version>1.1.1</Version>
+        <Version>1.1.2</Version>
         <PackageTags>ResultPattern</PackageTags>
         <PackageReadmeFile>Readme.md</PackageReadmeFile>
         <PackageId>Hesham.ResultPattern.Extension.MVC</PackageId>
