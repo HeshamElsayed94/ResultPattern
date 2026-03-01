@@ -23,7 +23,7 @@ Every `Error` automatically captures a `ResultStackTrace` at the call site via c
 
 ```
 [NotFound Error] Restaurant with id '5' not found.
-  at Handle in DeleteRestaurantCommandHandler.cs:line 14
+  at DeleteRestaurantCommandHandler.cs:line 14
 ```
 
 ### Key Design Principles
