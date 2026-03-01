@@ -52,9 +52,9 @@ Represents either a success value or a collection of errors — never both.
 
 | Member | Type | Description |
 |---|---|---|
-| `Value` | `TValue` | Safe only when `ISuccess` is `true` |
+| `Value` | `TValue` | Safe only when `IsSuccess` is `true` |
 | `Errors` | `IReadOnlyList<Error>?` | `null` on success |
-| `ISuccess` | `bool` | `true` when no errors |
+| `IsSuccess` | `bool` | `true` when no errors |
 
 ### Implicit Conversions
 
@@ -159,7 +159,7 @@ var ensureResult = Result.Ensure(restaurant,
     )
 );
 
-if (!ensureResult.ISuccess)
+if (!ensureResult.IsSuccess)
     return ensureResult.Errors!.ToList();
 ```
 
@@ -189,7 +189,7 @@ public static Result<User> Create(string name, string email)
 
     var combined = Result.Combine([nameValidation, emailValidation]);
 
-    if (!combined.ISuccess)
+    if (!combined.IsSuccess)
         return combined.Errors!.ToList();
 
     return new User(name, email);
