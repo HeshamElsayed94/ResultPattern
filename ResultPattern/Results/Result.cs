@@ -132,7 +132,7 @@ public sealed class Result<TValue> : IResult<TValue>
 	/// <summary><c>true</c> if the result is successful; <c>false</c> if it contains errors.</summary>
 	public bool IsSuccess => Errors is null;
 
-	[JsonConstructor]
+	[JsonConstructor,Obsolete("",true)]
 	private Result(TValue? value, List<Error>? errors)
 	{
 		if (value is not null)
